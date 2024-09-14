@@ -9,11 +9,24 @@ class Broker:
         self.addr = None
 
     def construct_response(self, data):
-        correlation_id = int.from_bytes(data[8:12], byteorder="big")
-        header = correlation_id.to_bytes(length=4, byteorder="big", signed=True)
-        message_length = (len(header)).to_bytes(length=4, byteorder="big", signed=True)
-        response = message_length + header
+        api_version = int.from_bytes(data[6:8], byteorder="big")
+        if 0 <= api_version <= 4:
+            valid_version = True
+        else:
+            valid_version = False
+
+        error_code = self.convertToBytes(35)
+        correlation_id = self.convertFromBytes(data[8:12])
+        header = self.convertToBytes(correlation_id)
+        message_length = self.convertToBytes(len(header))
+        response = message_length + header + error_code
         return response
+    
+    def convertToBytes(self, data, length=4):
+        return data.to_bytes(length=length, byteorder="big", signed=True)
+    
+    def convertFromBytes(self, data):
+        return int.from_bytes(data, byteorder="big")
     
     def handle_request(self):
         data = self.client.recv(1024)
