@@ -15,7 +15,7 @@ class Broker:
         else:
             valid_version = False
 
-        error_code = self.convertToBytes(35)
+        error_code = self.convertToBytes(35, 2)
         correlation_id = self.convertFromBytes(data[8:12])
         header = self.convertToBytes(correlation_id)
         message_length = self.convertToBytes(len(header))
