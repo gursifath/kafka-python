@@ -1,5 +1,5 @@
 import socket  # noqa: F401
-
+import struct
 # data = datab'\x00\x00\x00#\x00\x12\x00\x046\xbd\x82c\x00\tkafka-cli\x00\nkafka-cli\x040.1\x00'
 
 class Broker:
@@ -15,11 +15,31 @@ class Broker:
         else:
             valid_version = False
 
-        error_code = self.convertToBytes(35, 2)
-        correlation_id = self.convertFromBytes(data[8:12])
-        header = self.convertToBytes(correlation_id)
-        message_length = self.convertToBytes(len(header))
-        response = message_length + header + error_code
+        api_key_version = 18
+        min_version = 0
+        max_version = 4
+        error_code = 0 if valid_version else 35
+        correlation_id = int.from_bytes(data[8:12], byteorder="big")
+
+        response_body = (
+            struct.pack(">H", error_code) + 
+            struct.pack(">B", 2) + 
+            struct.pack(">H", api_key_version) +
+            struct.pack(">H", min_version) +
+            struct.pack(">H", max_version) + 
+            struct.pack(">H", 0) +
+            struct.pack(">I", 0)
+        )
+
+        response_header = (
+            struct.pack(">I", correlation_id)
+        )
+
+        message_length = len(response_header) + len(response_body)
+        message_length = self.convertToBytes(message_length)
+                
+        response = message_length + response_header + response_body
+        print(response)
         return response
     
     def convertToBytes(self, data, length=4):
