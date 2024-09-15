@@ -1,6 +1,5 @@
 import socket  # noqa: F401
 import struct
-# data = datab'\x00\x00\x00#\x00\x12\x00\x046\xbd\x82c\x00\tkafka-cli\x00\nkafka-cli\x040.1\x00'
 
 class Broker:
     def __init__(self, port):
